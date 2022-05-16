@@ -93,6 +93,7 @@ lap(index_x1,:) = Dx(index_x1,:);
 lap(index_y0,:) = Dy(index_y0,:);
 lap(index_y1,:) = Dy(index_y1,:);
 
+% Preconditioner for lap if necessary for gmres
 % fprintf('Building LU...\n');
 % options.type = 'ilutp'; options.udiag=1; options.droptol=1e-2;
 % [L,U] = ilu(lap, options);
@@ -156,15 +157,16 @@ while rs(end) > residual_tol && iters < maxiters && (numel(rs)==1 || abs(rs(end)
     
     fprintf('    beta = %e, res = %e\n',beta,res_fn_norm(Bp));
     
-%     div = [Dx,Dy,Dz]*Bp; div(index_gh) = 0; div(index_z1) = 0;
-%     div(index_x0) = 0; div(index_x1) = 0; div(index_y0) = 0; div(index_y1) = 0;
+    div = [Dx,Dy,Dz]*Bp; div(index_gh) = 0; div(index_z1) = 0;
+    div(index_x0) = 0; div(index_x1) = 0; div(index_y0) = 0; div(index_y1) = 0;
+% Use gmres if lap is large, and direct backslash if lap is small...
 %     [phi,flagp,relresp,iterp,resvecp] = gmres(lap,div,1e2,1e-4,1e1);
-%     phi = lap\div;
-% %    keyboard();
-% 
-%     phiup = [Dx;Dy;Dz]*phi;
-%     Bp = Bp-phiup;
-%     fprintf('    final residual: %e\n',res_fn_norm(Bp));
+    phi = lap\div;
+%    keyboard();
+
+    phiup = [Dx;Dy;Dz]*phi;
+    Bp = Bp-phiup;
+    fprintf('    final residual: %e\n',res_fn_norm(Bp));
     
     rs = [rs;res_fn_norm(Bp)];
     Bfullset(:,iters+1) = Bp;
