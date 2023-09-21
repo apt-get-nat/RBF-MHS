@@ -173,8 +173,14 @@ def potfield(nodes, Bz0, Dx, Dy, Dz, Dxx, Dyy, Dzz, index, config={}):
     config.setdefault('lsqr_lim',1e4)
     config.setdefault('verbose',False)
     n = nodes.shape[0]
-    lap = (Dxx+Dyy+Dzz)
+    lap = (Dx.dot(Dx)+Dy.dot(Dy)+Dz.dot(Dz))
+    I = sparse.eye(n,format='csr')
     lap[index.z0,:] = Dz[index.z0,:]
+    lap[index.z1,:] = I[index.z1,:]
+    lap[index.x0,:] = I[index.x0,:]
+    lap[index.y0,:] = I[index.y0,:]
+    lap[index.x1,:] = I[index.x1,:]
+    lap[index.y1,:] = I[index.y1,:]
     rhs = np.zeros((n,1))
     rhs[index.z0] = Bz0
     lap = lap.tocsr()
